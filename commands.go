@@ -1,14 +1,11 @@
 // Copyright (c) The Noxide Project Authors
 // SPDX-License-Identifier: BSD-3-Clause
 
-// Package babycli is a library for declrative parsing of command line arguments,
-// including support for sub-commands, command aliases, long and short flag names,
-// repeated flags, and custom help messages.
 package babycli
 
 import (
 	"context"
-	"fmt"
+	"io"
 	"slices"
 	"strconv"
 	"strings"
@@ -19,43 +16,24 @@ import (
 
 type Func func(*Component)
 
-type FlagType uint8
-
-const (
-	StringFlag FlagType = iota
-	IntFlag
-	BoolFlag
-	DurationFlag
-)
-
-type Flag struct {
-	Type    FlagType
-	Require bool
-	Repeats bool
-	Long    string
-	Short   string
-	Help    string
-}
-
-func (f *Flag) Identity() string {
-	if f.Long == "" {
-		return f.Short
-	}
-	return f.Long
-}
-
-func (f *Flag) Is(name string) bool {
-	if len(name) == 1 {
-		return f.Short == name
-	}
-	return f.Long == name
-}
-
 type values struct {
 	strings   map[string][]string
 	ints      map[string][]int
 	bools     map[string][]bool
 	durations map[string][]time.Duration
+}
+
+func (v *values) helpSet() bool {
+	for k, bs := range v.bools {
+		if k == "help" || k == "h" {
+			for _, b := range bs {
+				if b {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 
 type Components []*Component
@@ -76,26 +54,12 @@ func (cs Components) Get(name string) *Component {
 	return nil
 }
 
-type Flags []*Flag
-
-func (fs Flags) Contains(name string) bool {
-	return slices.ContainsFunc(fs, func(f *Flag) bool {
-		return f.Is(name)
-	})
-}
-
-func (fs Flags) Get(name string) *Flag {
-	for _, f := range fs {
-		if f.Is(name) {
-			return f
-		}
-	}
-	panicf("flag %q is not defined", name)
-	return nil
-}
-
 type Component struct {
 	Name string
+
+	Help string
+
+	Description string
 
 	Context context.Context
 
@@ -108,19 +72,20 @@ type Component struct {
 	args stacks.Stack[string]
 
 	vals *values
+
+	globals Flags
+
+	version string
 }
 
 func (c *Component) Leaf() bool {
 	if len(c.Components) > 0 {
 		return false
 	}
-	if c.Function == nil {
-		panicf("no function for leaf command %q", c.Name)
-	}
 	return true
 }
 
-func (c *Component) run() *Result {
+func (c *Component) run(output io.Writer) *Result {
 	if c.vals == nil {
 		c.vals = &values{
 			strings:   make(map[string][]string, 0),
@@ -131,25 +96,39 @@ func (c *Component) run() *Result {
 	}
 
 	for !c.args.Empty() {
-		if !c.setupFlags() {
+		if more := c.processFlags(); !more {
 			break
 		}
 	}
 
-	if c.Leaf() {
+	if c.vals.helpSet() {
+		text := c.help()
+		writef(output, text)
+		return &Result{Code: ExitSuccess}
+	}
+
+	if c.Leaf() && c.Function != nil {
 		c.Function(c)
 		return &Result{Code: ExitSuccess}
 	}
+
+	if c.args.Empty() {
+		text := c.help()
+		writef(output, text)
+		return &Result{Code: ExitFailure}
+	}
+
 	sub := c.args.Pop()
 	cmd := c.Components.Get(sub)
 	cmd.args = c.args
 	cmd.vals = c.vals
-	return cmd.run()
+	cmd.globals = c.globals
+	return cmd.run(output)
 }
 
-func (c *Component) setupFlags() bool {
+func (c *Component) processFlags() bool {
 	arg := c.args.Peek()
-	fmt.Println("next() arg", arg)
+
 	switch {
 	case strings.HasPrefix(arg, "--"):
 		c.consumeFlag()
@@ -163,9 +142,13 @@ func (c *Component) setupFlags() bool {
 }
 
 func (c *Component) consumeFlag() {
+	combine := make(Flags, 0, len(c.Flags)+len(c.globals))
+	combine = append(combine, c.Flags...)
+	combine = append(combine, c.globals...)
+
 	name := c.args.Pop()
 	name = strings.TrimLeft(name, "-")
-	flag := c.Flags.Get(name)
+	flag := combine.Get(name)
 
 	switch flag.Type {
 	case BoolFlag:

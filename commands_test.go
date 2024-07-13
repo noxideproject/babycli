@@ -268,7 +268,11 @@ func TestRun_topCommand(t *testing.T) {
 		output = "" // reset for each test case
 
 		t.Run(tc.name, func(t *testing.T) {
-			c := New(tc.args, tc.root)
+			config := &Configuration{
+				Arguments: tc.args,
+				Top:       tc.root,
+			}
+			c := New(config)
 			result := c.Run()
 			must.Eq(t, tc.exp, output)
 			must.Eq(t, ExitSuccess, result)
@@ -322,7 +326,11 @@ func TestRun_childCommand(t *testing.T) {
 		output = "" // reset for each test case
 
 		t.Run(tc.name, func(t *testing.T) {
-			c := New(tc.args, tc.root)
+			config := &Configuration{
+				Arguments: tc.args,
+				Top:       tc.root,
+			}
+			c := New(config)
 			result := c.Run()
 			must.Eq(t, tc.exp, output)
 			must.Eq(t, ExitSuccess, result)
@@ -387,10 +395,28 @@ func TestRun_grandchildCommand(t *testing.T) {
 		output = "" // reset for each test case
 
 		t.Run(tc.name, func(t *testing.T) {
-			c := New(tc.args, tc.root)
+			config := &Configuration{
+				Arguments: tc.args,
+				Top:       tc.root,
+			}
+			c := New(config)
 			result := c.Run()
 			must.Eq(t, tc.exp, output)
 			must.Eq(t, ExitSuccess, result)
 		})
 	}
+}
+
+func TestHelp_top(t *testing.T) {
+	config := &Configuration{
+		Arguments: nil,
+		Top: &Component{
+			Name: "program",
+		},
+	}
+
+	c := New(config)
+
+	code := c.Run()
+	must.Eq(t, ExitFailure, code)
 }
