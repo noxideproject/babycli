@@ -14,7 +14,7 @@ import (
 	"noxide.lol/go/stacks"
 )
 
-type Func func(*Component)
+type Func func(*Component) Code
 
 type values struct {
 	strings   map[string][]string
@@ -71,6 +71,8 @@ type Component struct {
 
 	args stacks.Stack[string]
 
+	flat []string
+
 	vals *values
 
 	globals Flags
@@ -78,11 +80,25 @@ type Component struct {
 	version string
 }
 
+func (c *Component) Arguments() []string {
+	if len(c.flat) == 0 && c.args.Size() > 0 {
+		c.flat = make([]string, 0, c.args.Size())
+		for i := 0; i < c.args.Size(); i++ {
+			c.flat = append(c.flat, c.args.Pop())
+		}
+	}
+	return c.flat
+}
+
+func (c *Component) Nargs() int {
+	return len(c.Arguments())
+}
+
 func (c *Component) Leaf() bool {
 	return len(c.Components) == 0
 }
 
-func (c *Component) run(output io.Writer) *Result {
+func (c *Component) run(output io.Writer) *result {
 	if c.vals == nil {
 		c.vals = &values{
 			strings:   make(map[string][]string, 0),
@@ -101,18 +117,18 @@ func (c *Component) run(output io.Writer) *Result {
 	if c.vals.helpSet() {
 		text := c.help()
 		writef(output, text)
-		return &Result{Code: ExitSuccess}
+		return &result{code: Success}
 	}
 
 	if c.Leaf() && c.Function != nil {
 		c.Function(c)
-		return &Result{Code: ExitSuccess}
+		return &result{code: Success}
 	}
 
 	if c.args.Empty() {
 		text := c.help()
 		writef(output, text)
-		return &Result{Code: ExitFailure}
+		return &result{code: Failure}
 	}
 
 	sub := c.args.Pop()
