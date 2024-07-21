@@ -33,11 +33,6 @@ type Configuration struct {
 	Context   context.Context
 }
 
-type Runnable struct {
-	root   *Component
-	output io.Writer
-}
-
 func Arguments() []string {
 	return os.Args[1:]
 }
@@ -47,7 +42,7 @@ func New(c *Configuration) *Runnable {
 	slices.Reverse(arguments)
 	c.Top.args = stacks.Simple(arguments...)
 	c.Top.version = c.Version
-	c.Top.globals = append(c.Globals, helpFlag)
+	c.Top.globals = c.globals()
 	c.Top.Context = c.context()
 	output := c.Output
 	if output == nil {
@@ -57,6 +52,22 @@ func New(c *Configuration) *Runnable {
 		root:   c.Top,
 		output: output,
 	}
+}
+
+func (c *Configuration) context() context.Context {
+	if c.Context == nil {
+		return context.Background()
+	}
+	return c.Context
+}
+
+func (c *Configuration) globals() Flags {
+	return append(c.Globals, helpFlag)
+}
+
+type Runnable struct {
+	root   *Component
+	output io.Writer
 }
 
 func (r *Runnable) Run() ExitCode {
@@ -69,11 +80,4 @@ func (r *Runnable) Run() ExitCode {
 
 func (r *Runnable) run() *Result {
 	return r.root.run(r.output)
-}
-
-func (c *Configuration) context() context.Context {
-	if c.Context == nil {
-		return context.Background()
-	}
-	return c.Context
 }
