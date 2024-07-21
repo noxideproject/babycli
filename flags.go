@@ -40,6 +40,16 @@ type Flag struct {
 	Long    string
 	Short   string
 	Help    string
+	Default *Default
+}
+
+type Default struct {
+	Value any
+	Show  bool
+}
+
+func (f *Flag) showDefault() bool {
+	return f.Default != nil && f.Default.Show
 }
 
 func (f *Flag) help() [3]string {
@@ -52,8 +62,14 @@ func (f *Flag) help() [3]string {
 	default:
 		parts[0] = "-" + f.Short
 	}
+
 	parts[1] = f.Type.String()
 	parts[2] = f.Help
+
+	if f.showDefault() {
+		parts[2] = fmt.Sprintf("%s (%v)", parts[2], f.Default.Value)
+	}
+
 	return parts
 }
 

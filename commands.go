@@ -23,6 +23,22 @@ type values struct {
 	durations map[string][]time.Duration
 }
 
+func (v *values) stringCount(flag string) int {
+	return len(v.strings[flag])
+}
+
+func (v *values) intCount(flag string) int {
+	return len(v.ints[flag])
+}
+
+func (v *values) boolCount(flag string) int {
+	return len(v.bools[flag])
+}
+
+func (v *values) durationCount(flag string) int {
+	return len(v.durations[flag])
+}
+
 func (v *values) helpSet() bool {
 	for k, bs := range v.bools {
 		if k == "help" || k == "h" {
@@ -98,7 +114,7 @@ func (c *Component) Leaf() bool {
 	return len(c.Components) == 0
 }
 
-func (c *Component) run(output io.Writer) *result {
+func (c *Component) init() {
 	if c.vals == nil {
 		c.vals = &values{
 			strings:   make(map[string][]string, 0),
@@ -107,6 +123,10 @@ func (c *Component) run(output io.Writer) *result {
 			durations: make(map[string][]time.Duration, 0),
 		}
 	}
+}
+
+func (c *Component) run(output io.Writer) *result {
+	c.init()
 
 	for !c.args.Empty() {
 		if more := c.processFlags(); !more {
@@ -121,8 +141,8 @@ func (c *Component) run(output io.Writer) *result {
 	}
 
 	if c.Leaf() && c.Function != nil {
-		c.Function(c)
-		return &result{code: Success}
+		code := c.Function(c)
+		return &result{code: code}
 	}
 
 	if c.args.Empty() {
@@ -245,45 +265,85 @@ func (c *Component) consumeDurationFlag(identity string) {
 }
 
 func (c *Component) GetString(flag string) string {
-	if len(c.vals.strings[flag]) == 0 {
+	switch c.vals.stringCount(flag) {
+	case 0:
+		if def := c.Flags.Get(flag).Default; def != nil {
+			return def.Value.(string)
+		}
 		panicf("no value for string flag %q", flag)
+	case 1:
+		return c.vals.strings[flag][0]
+	default:
+		panicf("multiple values set for string flag %q", flag)
 	}
-	if len(c.vals.strings[flag]) > 1 {
-		panicf("multiple values for string flag %q", flag)
-	}
-	return c.vals.strings[flag][0]
+	return ""
 }
 
 func (c *Component) GetStrings(flag string) []string {
-	return c.vals.strings[flag]
+	switch c.vals.stringCount(flag) {
+	case 0:
+		if def := c.Flags.Get(flag).Default; def != nil {
+			return []string{def.Value.(string)}
+		}
+		return []string{}
+	default:
+		return c.vals.strings[flag]
+	}
 }
 
 func (c *Component) GetInt(flag string) int {
-	if len(c.vals.ints[flag]) == 0 {
+	switch c.vals.intCount(flag) {
+	case 0:
+		if def := c.Flags.Get(flag).Default; def != nil {
+			return def.Value.(int)
+		}
 		panicf("no value for int flag %q", flag)
+	case 1:
+		return c.vals.ints[flag][0]
+	default:
+		panicf("multiple values set for int flag %q", flag)
 	}
-	if len(c.vals.ints[flag]) > 1 {
-		panicf("multiple values for int flag %q", flag)
-	}
-	return c.vals.ints[flag][0]
+	return 0
 }
 
 func (c *Component) GetInts(flag string) []int {
-	return c.vals.ints[flag]
+	switch c.vals.intCount(flag) {
+	case 0:
+		if def := c.Flags.Get(flag).Default; def != nil {
+			return []int{def.Value.(int)}
+		}
+		return []int{}
+	default:
+		return c.vals.ints[flag]
+	}
+
 }
 
 func (c *Component) GetDuration(flag string) time.Duration {
-	if len(c.vals.durations[flag]) == 0 {
+	switch c.vals.durationCount(flag) {
+	case 0:
+		if def := c.Flags.Get(flag).Default; def != nil {
+			return def.Value.(time.Duration)
+		}
 		panicf("no value for duration flag %q", flag)
+	case 1:
+		return c.vals.durations[flag][0]
+	default:
+		panicf("multiple values set for duration flag %q", flag)
 	}
-	if len(c.vals.durations[flag]) > 1 {
-		panicf("multiple values for duration flag %q", flag)
-	}
-	return c.vals.durations[flag][0]
+	return time.Duration(0)
 }
 
 func (c *Component) GetDurations(flag string) []time.Duration {
-	return c.vals.durations[flag]
+	switch c.vals.durationCount(flag) {
+	case 0:
+		if def := c.Flags.Get(flag).Default; def != nil {
+			return []time.Duration{def.Value.(time.Duration)}
+		}
+		return []time.Duration{}
+	default:
+		return c.vals.durations[flag]
+	}
 }
 
 func (c *Component) GetBool(flag string) bool {
