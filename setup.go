@@ -12,17 +12,19 @@ import (
 	"noxide.lol/go/stacks"
 )
 
-type ExitCode = int
-
-type Result struct {
-	Code    ExitCode
-	Message string
-}
+type Code = int
 
 const (
-	ExitSuccess ExitCode = iota
-	ExitFailure
+	Success Code = iota
+	Failure
 )
+
+type result struct {
+	code Code
+
+	// TODO: should this be used or removed?
+	// message string
+}
 
 type Configuration struct {
 	Arguments []string
@@ -70,14 +72,14 @@ type Runnable struct {
 	output io.Writer
 }
 
-func (r *Runnable) Run() ExitCode {
+func (r *Runnable) Run() Code {
 	if r := recover(); r != nil {
-		return ExitFailure
+		return Failure
 	}
 	result := r.run()
-	return result.Code
+	return result.code
 }
 
-func (r *Runnable) run() *Result {
+func (r *Runnable) run() *result {
 	return r.root.run(r.output)
 }

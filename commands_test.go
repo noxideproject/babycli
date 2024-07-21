@@ -29,8 +29,9 @@ func TestRun_topCommand(t *testing.T) {
 			exp:  "ok",
 			args: nil,
 			root: &Component{
-				Function: func(*Component) {
+				Function: func(*Component) Code {
 					output = "ok"
+					return Success
 				},
 			},
 		},
@@ -46,9 +47,10 @@ func TestRun_topCommand(t *testing.T) {
 						Short: "n",
 					},
 				},
-				Function: func(c *Component) {
+				Function: func(c *Component) Code {
 					name := c.GetString("name")
 					output = fmt.Sprintf("hello, %s!", name)
+					return Success
 				},
 			},
 		},
@@ -64,9 +66,10 @@ func TestRun_topCommand(t *testing.T) {
 						Short: "n",
 					},
 				},
-				Function: func(c *Component) {
+				Function: func(c *Component) Code {
 					name := c.GetString("name")
 					output = fmt.Sprintf("hello, %s!", name)
+					return Success
 				},
 			},
 		},
@@ -83,9 +86,10 @@ func TestRun_topCommand(t *testing.T) {
 						Repeats: true,
 					},
 				},
-				Function: func(c *Component) {
+				Function: func(c *Component) Code {
 					names := c.GetStrings("name")
 					output = "hello " + strings.Join(names, " ")
+					return Success
 				},
 			},
 		},
@@ -100,9 +104,10 @@ func TestRun_topCommand(t *testing.T) {
 						Long: "age",
 					},
 				},
-				Function: func(c *Component) {
+				Function: func(c *Component) Code {
 					age := c.GetInt("age")
 					output = fmt.Sprintf("age is %d", age)
+					return Success
 				},
 			},
 		},
@@ -118,9 +123,10 @@ func TestRun_topCommand(t *testing.T) {
 						Short: "a",
 					},
 				},
-				Function: func(c *Component) {
+				Function: func(c *Component) Code {
 					age := c.GetInt("age")
 					output = fmt.Sprintf("age is %d", age)
+					return Success
 				},
 			},
 		},
@@ -136,9 +142,10 @@ func TestRun_topCommand(t *testing.T) {
 						Short: "a",
 					},
 				},
-				Function: func(c *Component) {
+				Function: func(c *Component) Code {
 					ages := c.GetInts("age")
 					output = fmt.Sprintf("ages are %d %d %d %d", ages[0], ages[1], ages[2], ages[3])
+					return Success
 				},
 			},
 		},
@@ -153,9 +160,10 @@ func TestRun_topCommand(t *testing.T) {
 						Long: "ttl",
 					},
 				},
-				Function: func(c *Component) {
+				Function: func(c *Component) Code {
 					ttl := c.GetDuration("ttl")
 					output = fmt.Sprintf("ttl is %s", ttl)
+					return Success
 				},
 			},
 		},
@@ -171,9 +179,10 @@ func TestRun_topCommand(t *testing.T) {
 						Short: "s",
 					},
 				},
-				Function: func(c *Component) {
+				Function: func(c *Component) Code {
 					ttl := c.GetDuration("ttl")
 					output = fmt.Sprintf("ttl is %s", ttl)
+					return Success
 				},
 			},
 		},
@@ -189,9 +198,10 @@ func TestRun_topCommand(t *testing.T) {
 						Short: "s",
 					},
 				},
-				Function: func(c *Component) {
+				Function: func(c *Component) Code {
 					ttls := c.GetDurations("ttl")
 					output = fmt.Sprintf("ttls are %s %s", ttls[0], ttls[1])
+					return Success
 				},
 			},
 		},
@@ -206,9 +216,10 @@ func TestRun_topCommand(t *testing.T) {
 						Long: "force",
 					},
 				},
-				Function: func(c *Component) {
+				Function: func(c *Component) Code {
 					f := c.GetBool("force")
 					output = fmt.Sprintf("force is %t", f)
+					return Success
 				},
 			},
 		},
@@ -223,9 +234,10 @@ func TestRun_topCommand(t *testing.T) {
 						Long: "force",
 					},
 				},
-				Function: func(c *Component) {
+				Function: func(c *Component) Code {
 					f := c.GetBool("force")
 					output = fmt.Sprintf("force is %t", f)
+					return Success
 				},
 			},
 		},
@@ -240,9 +252,10 @@ func TestRun_topCommand(t *testing.T) {
 						Long: "force",
 					},
 				},
-				Function: func(c *Component) {
+				Function: func(c *Component) Code {
 					f := c.GetBool("force")
 					output = fmt.Sprintf("force is %t", f)
+					return Success
 				},
 			},
 		},
@@ -258,9 +271,10 @@ func TestRun_topCommand(t *testing.T) {
 						Short: "f",
 					},
 				},
-				Function: func(c *Component) {
+				Function: func(c *Component) Code {
 					f := c.GetBool("force")
 					output = fmt.Sprintf("force is %t", f)
+					return Success
 				},
 			},
 		},
@@ -277,7 +291,7 @@ func TestRun_topCommand(t *testing.T) {
 			c := New(config)
 			result := c.Run()
 			must.Eq(t, tc.exp, output)
-			must.Eq(t, ExitSuccess, result)
+			must.Eq(t, Success, result)
 		})
 	}
 }
@@ -295,8 +309,9 @@ func TestRun_childCommand(t *testing.T) {
 				Components: Components{
 					{
 						Name: "about",
-						Function: func(*Component) {
+						Function: func(*Component) Code {
 							output = "this is about"
+							return Success
 						},
 					},
 				},
@@ -316,9 +331,10 @@ func TestRun_childCommand(t *testing.T) {
 								Long: "name",
 							},
 						},
-						Function: func(c *Component) {
+						Function: func(c *Component) Code {
 							name := c.GetString("name")
 							output = fmt.Sprintf("hello, %s!", name)
+							return Success
 						},
 					},
 				},
@@ -337,7 +353,7 @@ func TestRun_childCommand(t *testing.T) {
 			c := New(config)
 			result := c.Run()
 			must.Eq(t, tc.exp, output)
-			must.Eq(t, ExitSuccess, result)
+			must.Eq(t, Success, result)
 		})
 	}
 }
@@ -359,8 +375,9 @@ func TestRun_grandchildCommand(t *testing.T) {
 						Components: Components{
 							{
 								Name: "second",
-								Function: func(*Component) {
+								Function: func(*Component) Code {
 									output = "this is grandchild"
+									return Success
 								},
 							},
 						},
@@ -385,9 +402,10 @@ func TestRun_grandchildCommand(t *testing.T) {
 										Long: "name",
 									},
 								},
-								Function: func(c *Component) {
+								Function: func(c *Component) Code {
 									name := c.GetString("name")
 									output = fmt.Sprintf("hello, %s!", name)
+									return Success
 								},
 							},
 						},
@@ -408,7 +426,7 @@ func TestRun_grandchildCommand(t *testing.T) {
 			c := New(config)
 			result := c.Run()
 			must.Eq(t, tc.exp, output)
-			must.Eq(t, ExitSuccess, result)
+			must.Eq(t, Success, result)
 		})
 	}
 }
@@ -426,5 +444,5 @@ func TestHelp_top(t *testing.T) {
 	c := New(config)
 
 	code := c.Run()
-	must.Eq(t, ExitFailure, code)
+	must.Eq(t, Failure, code)
 }
