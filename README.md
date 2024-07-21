@@ -1,6 +1,6 @@
 # babycli
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/noxideproject/babycli.svg)](https://pkg.go.dev/github.com/noxideproject/babycli)
+[![Go Reference](https://pkg.go.dev/badge/noxide.lol/go/babycli.svg)](https://pkg.go.dev/noxide.lol/go/babycli)
 [![BSD License](https://img.shields.io/github/license/noxideproject/babycli?color=g&style=flat-square)](https://github.com/noxideproject/babycli/blob/main/LICENSE)
 [![Run CI Tests](https://github.com/noxideproject/babycli/actions/workflows/ci.yaml/badge.svg)](https://github.com/noxideproject/babycli/actions/workflows/ci.yaml)
 
