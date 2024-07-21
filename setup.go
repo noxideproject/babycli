@@ -45,7 +45,7 @@ func New(c *Configuration) *Runnable {
 	c.Top.args = stacks.Simple(arguments...)
 	c.Top.version = c.Version
 	c.Top.globals = c.globals()
-	c.Top.Context = c.context()
+	c.Top.context = c.context()
 	output := c.Output
 	if output == nil {
 		output = os.Stderr

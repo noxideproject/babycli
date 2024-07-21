@@ -77,8 +77,6 @@ type Component struct {
 
 	Description string
 
-	Context context.Context
-
 	Components Components
 
 	Function Func
@@ -94,6 +92,12 @@ type Component struct {
 	globals Flags
 
 	version string
+
+	context context.Context
+}
+
+func (c *Component) Context() context.Context {
+	return c.context
 }
 
 func (c *Component) Arguments() []string {
@@ -156,6 +160,7 @@ func (c *Component) run(output io.Writer) *result {
 	cmd.args = c.args
 	cmd.vals = c.vals
 	cmd.globals = c.globals
+	cmd.context = c.context
 	return cmd.run(output)
 }
 
@@ -264,6 +269,10 @@ func (c *Component) consumeDurationFlag(identity string) {
 	c.vals.durations[identity] = append(c.vals.durations[identity], dur)
 }
 
+func (c *Component) HasString(flag string) bool {
+	return c.vals.stringCount(flag) > 0
+}
+
 func (c *Component) GetString(flag string) string {
 	switch c.vals.stringCount(flag) {
 	case 0:
@@ -291,6 +300,10 @@ func (c *Component) GetStrings(flag string) []string {
 	}
 }
 
+func (c *Component) HasInt(flag string) bool {
+	return c.vals.intCount(flag) > 0
+}
+
 func (c *Component) GetInt(flag string) int {
 	switch c.vals.intCount(flag) {
 	case 0:
@@ -316,7 +329,10 @@ func (c *Component) GetInts(flag string) []int {
 	default:
 		return c.vals.ints[flag]
 	}
+}
 
+func (c *Component) HasDuration(flag string) bool {
+	return c.vals.durationCount(flag) > 0
 }
 
 func (c *Component) GetDuration(flag string) time.Duration {
@@ -344,6 +360,10 @@ func (c *Component) GetDurations(flag string) []time.Duration {
 	default:
 		return c.vals.durations[flag]
 	}
+}
+
+func (c *Component) HasBool(flag string) bool {
+	return c.vals.boolCount(flag) > 0
 }
 
 func (c *Component) GetBool(flag string) bool {
