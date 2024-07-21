@@ -13,7 +13,7 @@ var helpFlag = &Flag{
 	Repeats: false,
 	Long:    "help",
 	Short:   "h",
-	Usage:   "print help message",
+	Help:    "print help message",
 }
 
 const (

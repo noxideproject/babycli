@@ -39,7 +39,7 @@ type Flag struct {
 	Repeats bool
 	Long    string
 	Short   string
-	Usage   string
+	Help    string
 }
 
 func (f *Flag) help() [3]string {
@@ -53,7 +53,7 @@ func (f *Flag) help() [3]string {
 		parts[0] = "-" + f.Short
 	}
 	parts[1] = f.Type.String()
-	parts[2] = f.Usage
+	parts[2] = f.Help
 	return parts
 }
 
