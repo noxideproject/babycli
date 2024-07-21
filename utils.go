@@ -3,10 +3,19 @@
 
 package babycli
 
-import "fmt"
+import (
+	"fmt"
+	"io"
+)
 
 func panicf(msg string, args ...any) {
 	s := fmt.Sprintf(msg, args...)
 	s = "babycli: " + s
 	panic(s)
+}
+
+func writef(output io.Writer, msg string, args ...any) {
+	s := fmt.Sprintf(msg, args...)
+	s += "\n"
+	io.WriteString(output, s)
 }
