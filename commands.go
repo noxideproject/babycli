@@ -79,10 +79,7 @@ type Component struct {
 }
 
 func (c *Component) Leaf() bool {
-	if len(c.Components) > 0 {
-		return false
-	}
-	return true
+	return len(c.Components) == 0
 }
 
 func (c *Component) run(output io.Writer) *Result {
@@ -182,7 +179,6 @@ func (c *Component) consumeBoolFlag(identity string) {
 }
 
 func (c *Component) consumeStringFlag(identity string) {
-
 	if c.args.Empty() {
 		// TODO what about default values
 		panicf("no value for string flag %q", identity)
@@ -197,7 +193,6 @@ func (c *Component) consumeStringFlag(identity string) {
 }
 
 func (c *Component) consumeIntFlag(identity string) {
-
 	if c.args.Empty() {
 		// TODO what about default values
 		panicf("no value for int flag %q", identity)
@@ -232,16 +227,6 @@ func (c *Component) consumeDurationFlag(identity string) {
 	}
 	c.vals.durations[identity] = append(c.vals.durations[identity], dur)
 }
-
-// command -v
-
-// command argument
-
-// command subcommand -v
-
-// command -f
-// command -f true
-// command -f=true
 
 func (c *Component) GetString(flag string) string {
 	if len(c.vals.strings[flag]) == 0 {

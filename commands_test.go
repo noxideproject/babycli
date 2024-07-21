@@ -19,6 +19,8 @@ type testCase struct {
 }
 
 func TestRun_topCommand(t *testing.T) {
+	t.Parallel()
+
 	var output string
 
 	cases := []testCase{
@@ -27,7 +29,7 @@ func TestRun_topCommand(t *testing.T) {
 			exp:  "ok",
 			args: nil,
 			root: &Component{
-				Function: func(c *Component) {
+				Function: func(*Component) {
 					output = "ok"
 				},
 			},
@@ -83,7 +85,7 @@ func TestRun_topCommand(t *testing.T) {
 				},
 				Function: func(c *Component) {
 					names := c.GetStrings("name")
-					output = fmt.Sprintf("hello " + strings.Join(names, " "))
+					output = "hello " + strings.Join(names, " ")
 				},
 			},
 		},
@@ -281,6 +283,8 @@ func TestRun_topCommand(t *testing.T) {
 }
 
 func TestRun_childCommand(t *testing.T) {
+	t.Parallel()
+
 	var output string
 	cases := []testCase{
 		{
@@ -291,7 +295,7 @@ func TestRun_childCommand(t *testing.T) {
 				Components: Components{
 					{
 						Name: "about",
-						Function: func(c *Component) {
+						Function: func(*Component) {
 							output = "this is about"
 						},
 					},
@@ -339,6 +343,8 @@ func TestRun_childCommand(t *testing.T) {
 }
 
 func TestRun_grandchildCommand(t *testing.T) {
+	t.Parallel()
+
 	var output string
 
 	cases := []testCase{
@@ -353,7 +359,7 @@ func TestRun_grandchildCommand(t *testing.T) {
 						Components: Components{
 							{
 								Name: "second",
-								Function: func(c *Component) {
+								Function: func(*Component) {
 									output = "this is grandchild"
 								},
 							},
@@ -408,6 +414,8 @@ func TestRun_grandchildCommand(t *testing.T) {
 }
 
 func TestHelp_top(t *testing.T) {
+	t.Parallel()
+
 	config := &Configuration{
 		Arguments: nil,
 		Top: &Component{

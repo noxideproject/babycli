@@ -1,0 +1,41 @@
+name: Run CI Tests
+on: [pull_request]
+jobs:
+  run-copywrite:
+    timeout-minutes: 5
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-copywrite@v1.1.3
+      - name: verify copyright
+        run: |
+          copywrite --config .github/workflows/scripts/copywrite.hcl \
+            headers --spdx "BSD-3-Clause" --plan
+  run-lint:
+    timeout-minutes: 5
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.59.1
+          args: --config .github/workflows/scripts/golangci.yaml
+  run-tests:
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04
+          - macos-14
+    runs-on: ${{matrix.os}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: '**/go.sum'
+      - name: run tests
+        run: |
+          make test
+

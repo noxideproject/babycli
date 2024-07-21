@@ -17,5 +17,5 @@ func panicf(msg string, args ...any) {
 func writef(output io.Writer, msg string, args ...any) {
 	s := fmt.Sprintf(msg, args...)
 	s += "\n"
-	io.WriteString(output, s)
+	_, _ = io.WriteString(output, s)
 }
