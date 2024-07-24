@@ -4,6 +4,7 @@
 package babycli
 
 import (
+	"io"
 	"strings"
 )
 
@@ -19,6 +20,28 @@ var helpFlag = &Flag{
 const (
 	tab = "  "
 )
+
+func (c Components) write(w io.Writer) {
+	lines := make([][2]string, 0, len(c))
+
+	for _, component := range c {
+		lines = append(lines, [2]string{component.Name, component.Help})
+	}
+
+	var max0 int
+
+	for i := 0; i < len(lines); i++ {
+		max0 = max(max0, len(lines[i][0]))
+	}
+
+	for _, line := range lines {
+		_, _ = io.WriteString(w, "  ")
+		_, _ = io.WriteString(w, rightPad(max0, line[0]))
+		_, _ = io.WriteString(w, "- ")
+		_, _ = io.WriteString(w, line[1])
+		_, _ = io.WriteString(w, "\n")
+	}
+}
 
 func (c *Component) help() string {
 	sb := new(strings.Builder)
@@ -58,13 +81,7 @@ func (c *Component) help() string {
 
 	if len(c.Components) > 0 {
 		sb.WriteString("COMMANDS:\n")
-		for _, cmp := range c.Components {
-			sb.WriteString(tab)
-			sb.WriteString(cmp.Name)
-			sb.WriteString(" - ")
-			sb.WriteString(cmp.Help)
-			sb.WriteString("\n")
-		}
+		c.Components.write(sb)
 		sb.WriteString("\n")
 	}
 
