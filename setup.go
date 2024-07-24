@@ -6,6 +6,7 @@ package babycli
 import (
 	"context"
 	"io"
+	"math"
 	"os"
 	"slices"
 
@@ -15,8 +16,9 @@ import (
 type Code = int
 
 const (
-	Success Code = iota
-	Failure
+	Success   Code = 0
+	Failure   Code = 1
+	Usability Code = math.MaxInt
 )
 
 type result struct {
@@ -72,10 +74,13 @@ type Runnable struct {
 	output io.Writer
 }
 
-func (r *Runnable) Run() Code {
-	if r := recover(); r != nil {
-		return Failure
-	}
+func (r *Runnable) Run() (c Code) {
+	defer func() {
+		if p := recover(); p != nil {
+			_, _ = io.WriteString(r.output, p.(string))
+			c = Failure
+		}
+	}()
 	result := r.run()
 	return result.code
 }

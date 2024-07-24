@@ -146,6 +146,11 @@ func (c *Component) run(output io.Writer) *result {
 
 	if c.Leaf() && c.Function != nil {
 		code := c.Function(c)
+		if code == Usability {
+			text := c.help()
+			writef(output, text)
+			return &result{code: Failure}
+		}
 		return &result{code: code}
 	}
 
@@ -189,7 +194,7 @@ func (c *Component) consumeFlag() {
 	flag := combine.Get(name)
 
 	switch flag.Type {
-	case BoolFlag:
+	case BooleanFlag:
 		c.consumeBoolFlag(flag.Identity())
 	case StringFlag:
 		c.consumeStringFlag(flag.Identity())
@@ -276,10 +281,13 @@ func (c *Component) HasString(flag string) bool {
 func (c *Component) GetString(flag string) string {
 	switch c.vals.stringCount(flag) {
 	case 0:
-		if def := c.Flags.Get(flag).Default; def != nil {
-			return def.Value.(string)
+		f := c.Flags.Get(flag)
+		if f.Default != nil {
+			return f.Default.Value.(string)
 		}
-		panicf("no value for string flag %q", flag)
+		if f.Require {
+			panicf("no value for string flag %q", flag)
+		}
 	case 1:
 		return c.vals.strings[flag][0]
 	default:
@@ -289,15 +297,16 @@ func (c *Component) GetString(flag string) string {
 }
 
 func (c *Component) GetStrings(flag string) []string {
-	switch c.vals.stringCount(flag) {
-	case 0:
-		if def := c.Flags.Get(flag).Default; def != nil {
-			return []string{def.Value.(string)}
+	if n := c.vals.stringCount(flag); n == 0 {
+		f := c.Flags.Get(flag)
+		if f.Default != nil {
+			return []string{f.Default.Value.(string)}
 		}
-		return []string{}
-	default:
-		return c.vals.strings[flag]
+		if f.Require {
+			panicf("no value for string flag %q", flag)
+		}
 	}
+	return slices.Clone(c.vals.strings[flag])
 }
 
 func (c *Component) HasInt(flag string) bool {
@@ -307,10 +316,13 @@ func (c *Component) HasInt(flag string) bool {
 func (c *Component) GetInt(flag string) int {
 	switch c.vals.intCount(flag) {
 	case 0:
-		if def := c.Flags.Get(flag).Default; def != nil {
-			return def.Value.(int)
+		f := c.Flags.Get(flag)
+		if f.Default != nil {
+			return f.Default.Value.(int)
 		}
-		panicf("no value for int flag %q", flag)
+		if f.Require {
+			panicf("no value for int flag %q", flag)
+		}
 	case 1:
 		return c.vals.ints[flag][0]
 	default:
@@ -320,15 +332,16 @@ func (c *Component) GetInt(flag string) int {
 }
 
 func (c *Component) GetInts(flag string) []int {
-	switch c.vals.intCount(flag) {
-	case 0:
-		if def := c.Flags.Get(flag).Default; def != nil {
-			return []int{def.Value.(int)}
+	if n := c.vals.intCount(flag); n == 0 {
+		f := c.Flags.Get(flag)
+		if f.Default != nil {
+			return []int{f.Default.Value.(int)}
 		}
-		return []int{}
-	default:
-		return c.vals.ints[flag]
+		if f.Require {
+			panicf("no value for int flag %q", flag)
+		}
 	}
+	return slices.Clone(c.vals.ints[flag])
 }
 
 func (c *Component) HasDuration(flag string) bool {
@@ -338,28 +351,32 @@ func (c *Component) HasDuration(flag string) bool {
 func (c *Component) GetDuration(flag string) time.Duration {
 	switch c.vals.durationCount(flag) {
 	case 0:
-		if def := c.Flags.Get(flag).Default; def != nil {
-			return def.Value.(time.Duration)
+		f := c.Flags.Get(flag)
+		if f.Default != nil {
+			return f.Default.Value.(time.Duration)
 		}
-		panicf("no value for duration flag %q", flag)
+		if f.Require {
+			panicf("no value for duration flag %q", flag)
+		}
 	case 1:
 		return c.vals.durations[flag][0]
 	default:
 		panicf("multiple values set for duration flag %q", flag)
 	}
-	return time.Duration(0)
+	return 0
 }
 
 func (c *Component) GetDurations(flag string) []time.Duration {
-	switch c.vals.durationCount(flag) {
-	case 0:
-		if def := c.Flags.Get(flag).Default; def != nil {
-			return []time.Duration{def.Value.(time.Duration)}
+	if n := c.vals.intCount(flag); n == 0 {
+		f := c.Flags.Get(flag)
+		if f.Default != nil {
+			return []time.Duration{f.Default.Value.(time.Duration)}
 		}
-		return []time.Duration{}
-	default:
-		return c.vals.durations[flag]
+		if f.Require {
+			panicf("no value for duration flag %q", flag)
+		}
 	}
+	return slices.Clone(c.vals.durations[flag])
 }
 
 func (c *Component) HasBool(flag string) bool {
@@ -367,11 +384,32 @@ func (c *Component) HasBool(flag string) bool {
 }
 
 func (c *Component) GetBool(flag string) bool {
-	if len(c.vals.bools[flag]) == 0 {
-		panicf("no value for bool flag %q", flag)
+	switch c.vals.boolCount(flag) {
+	case 0:
+		f := c.Flags.Get(flag)
+		if f.Default != nil {
+			return f.Default.Value.(bool)
+		}
+		if f.Require {
+			panicf("no value for boolean flag %q", flag)
+		}
+	case 1:
+		return c.vals.bools[flag][0]
+	default:
+		panicf("multiple values set for boolean flag %q", flag)
 	}
-	if len(c.vals.bools[flag]) > 1 {
-		panicf("multiple values for bool flag %q", flag)
+	return false
+}
+
+func (c *Component) GetBools(flag string) []bool {
+	if n := c.vals.boolCount(flag); n == 0 {
+		f := c.Flags.Get(flag)
+		if f.Default != nil {
+			return []bool{f.Default.Value.(bool)}
+		}
+		if f.Require {
+			panicf("no value for boolean flag %q", flag)
+		}
 	}
-	return c.vals.bools[flag][0]
+	return slices.Clone(c.vals.bools[flag])
 }
