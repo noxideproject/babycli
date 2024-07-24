@@ -1,7 +1,7 @@
 # babycli
 
 [![Go Reference](https://pkg.go.dev/badge/noxide.lol/go/babycli.svg)](https://pkg.go.dev/noxide.lol/go/babycli)
-[![BSD License](https://img.shields.io/github/license/noxideproject/babycli?color=7C00D8&style=flat-square)](https://github.com/noxideproject/babycli/blob/main/LICENSE)
+[![BSD License](https://img.shields.io/github/license/noxideproject/babycli?color=7C00D8&style=flat-square&label=License)](https://github.com/noxideproject/babycli/blob/main/LICENSE)
 [![Build](https://img.shields.io/github/actions/workflow/status/noxideproject/babycli/ci.yaml?style=flat-square&color=0FAA07&label=CI)](https://github.com/noxideproject/babycli/actions/workflows/ci.yaml)
 
 `babycli` is a modern CLI arguments parser for Go.
