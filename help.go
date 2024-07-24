@@ -9,7 +9,7 @@ import (
 )
 
 var helpFlag = &Flag{
-	Type:    BoolFlag,
+	Type:    BooleanFlag,
 	Require: false,
 	Repeats: false,
 	Long:    "help",

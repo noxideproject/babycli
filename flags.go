@@ -15,7 +15,7 @@ type FlagType uint8
 const (
 	StringFlag FlagType = iota
 	IntFlag
-	BoolFlag
+	BooleanFlag
 	DurationFlag
 )
 
@@ -25,7 +25,7 @@ func (t FlagType) String() string {
 		return "string"
 	case IntFlag:
 		return "integer"
-	case BoolFlag:
+	case BooleanFlag:
 		return "boolean"
 	case DurationFlag:
 		return "duration"
@@ -120,6 +120,7 @@ func (fs Flags) write(w io.Writer) {
 
 	for _, line := range lines {
 		_, _ = io.WriteString(w, rightPad(max0, line[0]))
+		_, _ = io.WriteString(w, " ")
 		_, _ = io.WriteString(w, leftPad(max1, line[1]))
 		_, _ = io.WriteString(w, "- ")
 		_, _ = io.WriteString(w, line[2])
