@@ -5,11 +5,13 @@ package babycli
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/shoenig/test/must"
+	"noxide.lol/go/stacks"
 )
 
 type testCase struct {
@@ -603,6 +605,27 @@ func TestComponent_GetString(t *testing.T) {
 				},
 				Function: func(c *Component) Code {
 					name := c.GetString("name") // must use GetStrings
+					output = fmt.Sprintf("hello %s.", name)
+					return Success
+				},
+			},
+		},
+		{
+			name:    "use equal sign",
+			expText: "hello bob.",
+			expCode: Success,
+			args:    []string{"--name=bob"},
+			root: &Component{
+				Flags: Flags{
+					{
+						Type:    StringFlag,
+						Long:    "name",
+						Require: false,
+						Repeats: false,
+					},
+				},
+				Function: func(c *Component) Code {
+					name := c.GetString("name")
 					output = fmt.Sprintf("hello %s.", name)
 					return Success
 				},
@@ -1533,6 +1556,48 @@ func TestComponent_GetBoolean(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:    "use equal sign true",
+			expText: "ok true",
+			expCode: Success,
+			args:    []string{"--verbose=true"},
+			root: &Component{
+				Flags: Flags{
+					{
+						Type:    BooleanFlag,
+						Long:    "verbose",
+						Require: false,
+						Repeats: false,
+					},
+				},
+				Function: func(c *Component) Code {
+					verbose := c.GetBool("verbose")
+					output = "ok " + strconv.FormatBool(verbose)
+					return Success
+				},
+			},
+		},
+		{
+			name:    "use equal sign false",
+			expText: "ok false",
+			expCode: Success,
+			args:    []string{"--verbose=false"},
+			root: &Component{
+				Flags: Flags{
+					{
+						Type:    BooleanFlag,
+						Long:    "verbose",
+						Require: false,
+						Repeats: false,
+					},
+				},
+				Function: func(c *Component) Code {
+					verbose := c.GetBool("verbose")
+					output = "ok " + strconv.FormatBool(verbose)
+					return Success
+				},
+			},
+		},
 	}
 
 	for _, tc := range cases {
@@ -1666,6 +1731,53 @@ func TestComponent_GetBooleans(t *testing.T) {
 			must.Eq(t, tc.expText, output)
 			must.Eq(t, tc.expCode, result)
 			must.Eq(t, tc.expPanic, failure.String())
+		})
+	}
+}
+
+func TestComponent_maybeSplit(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name string
+		arg  string
+		exp  string
+		push []string
+	}{
+		{
+			name: "plain",
+			arg:  "-name",
+			exp:  "-name",
+			push: nil,
+		},
+		{
+			name: "split",
+			arg:  "-name=bob",
+			exp:  "-name",
+			push: []string{"bob"},
+		},
+		{
+			name: "quote",
+			arg:  "'a=b'",
+			exp:  "'a=b'",
+			push: nil,
+		},
+		{
+			name: "quote split",
+			arg:  "-name='bob dylan'",
+			exp:  "-name",
+			push: []string{"'bob dylan'"},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := &Component{
+				args: stacks.Simple[string](),
+			}
+			result := c.maybeSplit(tc.arg)
+			must.Eq(t, tc.exp, result)
+			must.Eq(t, c.args.Size(), len(tc.push))
 		})
 	}
 }
