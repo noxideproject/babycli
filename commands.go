@@ -184,12 +184,34 @@ func (c *Component) processFlags() bool {
 	}
 }
 
+func (c *Component) maybeSplit(arg string) string {
+	equal := strings.Index(arg, "=")
+	if equal == -1 {
+		return arg
+	}
+
+	apostrophe := strings.Index(arg, "'")
+	if apostrophe == 0 {
+		return arg
+	}
+
+	if (equal < apostrophe) || (apostrophe == -1 && equal > 0) {
+		tokens := strings.SplitN(arg, "=", 2)
+		c.args.Push(tokens[1])
+		arg = tokens[0]
+	}
+
+	return arg
+}
+
 func (c *Component) consumeFlag() {
 	combine := make(Flags, 0, len(c.Flags)+len(c.globals))
 	combine = append(combine, c.Flags...)
 	combine = append(combine, c.globals...)
 
 	name := c.args.Pop()
+	name = c.maybeSplit(name)
+
 	name = strings.TrimLeft(name, "-")
 	flag := combine.Get(name)
 
