@@ -300,10 +300,14 @@ func (c *Component) HasString(flag string) bool {
 	return c.vals.stringCount(flag) > 0
 }
 
+func (c *Component) combine() Flags {
+	return append(c.globals, c.Flags...)
+}
+
 func (c *Component) GetString(flag string) string {
 	switch c.vals.stringCount(flag) {
 	case 0:
-		f := c.Flags.Get(flag)
+		f := c.combine().Get(flag)
 		if f.Default != nil {
 			return f.Default.Value.(string)
 		}
@@ -320,7 +324,7 @@ func (c *Component) GetString(flag string) string {
 
 func (c *Component) GetStrings(flag string) []string {
 	if n := c.vals.stringCount(flag); n == 0 {
-		f := c.Flags.Get(flag)
+		f := c.combine().Get(flag)
 		if f.Default != nil {
 			return []string{f.Default.Value.(string)}
 		}
@@ -338,7 +342,7 @@ func (c *Component) HasInt(flag string) bool {
 func (c *Component) GetInt(flag string) int {
 	switch c.vals.intCount(flag) {
 	case 0:
-		f := c.Flags.Get(flag)
+		f := c.combine().Get(flag)
 		if f.Default != nil {
 			return f.Default.Value.(int)
 		}
@@ -355,7 +359,7 @@ func (c *Component) GetInt(flag string) int {
 
 func (c *Component) GetInts(flag string) []int {
 	if n := c.vals.intCount(flag); n == 0 {
-		f := c.Flags.Get(flag)
+		f := c.combine().Get(flag)
 		if f.Default != nil {
 			return []int{f.Default.Value.(int)}
 		}
@@ -373,7 +377,7 @@ func (c *Component) HasDuration(flag string) bool {
 func (c *Component) GetDuration(flag string) time.Duration {
 	switch c.vals.durationCount(flag) {
 	case 0:
-		f := c.Flags.Get(flag)
+		f := c.combine().Get(flag)
 		if f.Default != nil {
 			return f.Default.Value.(time.Duration)
 		}
@@ -408,7 +412,7 @@ func (c *Component) HasBool(flag string) bool {
 func (c *Component) GetBool(flag string) bool {
 	switch c.vals.boolCount(flag) {
 	case 0:
-		f := c.Flags.Get(flag)
+		f := c.combine().Get(flag)
 		if f.Default != nil {
 			return f.Default.Value.(bool)
 		}
@@ -425,7 +429,7 @@ func (c *Component) GetBool(flag string) bool {
 
 func (c *Component) GetBools(flag string) []bool {
 	if n := c.vals.boolCount(flag); n == 0 {
-		f := c.Flags.Get(flag)
+		f := c.combine().Get(flag)
 		if f.Default != nil {
 			return []bool{f.Default.Value.(bool)}
 		}
