@@ -1781,3 +1781,115 @@ func TestComponent_maybeSplit(t *testing.T) {
 		})
 	}
 }
+
+func TestGlobal_flag_bool(t *testing.T) {
+	t.Parallel()
+
+	var output string
+
+	config := &Configuration{
+		Top: &Component{
+			Function: func(c *Component) Code {
+				output = fmt.Sprintf("v is %t", c.GetBool("verbose"))
+				return Success
+			},
+		},
+		Globals: Flags{
+			{
+				Long: "verbose",
+				Default: &Default{
+					Value: true,
+				},
+			},
+		},
+	}
+
+	c := New(config)
+	result := c.Run()
+	must.Zero(t, result)
+	must.Eq(t, "v is true", output)
+}
+
+func TestGlobal_flag_string(t *testing.T) {
+	t.Parallel()
+
+	var output string
+
+	config := &Configuration{
+		Top: &Component{
+			Function: func(c *Component) Code {
+				output = "name is " + c.GetString("name")
+				return Success
+			},
+		},
+		Globals: Flags{
+			{
+				Long: "name",
+				Default: &Default{
+					Value: "billy",
+				},
+			},
+		},
+	}
+
+	c := New(config)
+	result := c.Run()
+	must.Zero(t, result)
+	must.Eq(t, "name is billy", output)
+}
+
+func TestGlobal_flag_int(t *testing.T) {
+	t.Parallel()
+
+	var output string
+
+	config := &Configuration{
+		Top: &Component{
+			Function: func(c *Component) Code {
+				output = fmt.Sprintf("age is %d", c.GetInt("age"))
+				return Success
+			},
+		},
+		Globals: Flags{
+			{
+				Long: "age",
+				Default: &Default{
+					Value: 32,
+				},
+			},
+		},
+	}
+
+	c := New(config)
+	result := c.Run()
+	must.Zero(t, result)
+	must.Eq(t, "age is 32", output)
+}
+
+func TestGlobal_flag_duration(t *testing.T) {
+	t.Parallel()
+
+	var output string
+
+	config := &Configuration{
+		Top: &Component{
+			Function: func(c *Component) Code {
+				output = fmt.Sprintf("ttl is %s", c.GetDuration("ttl"))
+				return Success
+			},
+		},
+		Globals: Flags{
+			{
+				Long: "ttl",
+				Default: &Default{
+					Value: 2 * time.Minute,
+				},
+			},
+		},
+	}
+
+	c := New(config)
+	result := c.Run()
+	must.Zero(t, result)
+	must.Eq(t, "ttl is 2m0s", output)
+}
