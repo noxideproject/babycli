@@ -1,5 +1,12 @@
 name: Run CI Tests
-on: [pull_request]
+on:
+  pull_request:
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE'
+  push:
+    branches:
+      - 'main'
 jobs:
   run-copywrite:
     timeout-minutes: 5
