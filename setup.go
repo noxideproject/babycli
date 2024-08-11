@@ -5,6 +5,7 @@ package babycli
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"math"
 	"os"
@@ -77,7 +78,8 @@ type Runnable struct {
 func (r *Runnable) Run() (c Code) {
 	defer func() {
 		if p := recover(); p != nil {
-			_, _ = io.WriteString(r.output, p.(string))
+			msg := fmt.Sprintf("%v", p)
+			_, _ = io.WriteString(r.output, msg)
 			c = Failure
 		}
 	}()
