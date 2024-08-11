@@ -1893,3 +1893,112 @@ func TestGlobal_flag_duration(t *testing.T) {
 	must.Zero(t, result)
 	must.Eq(t, "ttl is 2m0s", output)
 }
+
+func TestArguments_top(t *testing.T) {
+	t.Parallel()
+
+	var output string
+
+	cases := []struct {
+		name    string
+		args    []string
+		expText string
+	}{
+		{
+			name:    "none",
+			args:    []string{},
+			expText: "hello []",
+		},
+		{
+			name:    "one",
+			args:    []string{"one"},
+			expText: "hello [one]",
+		},
+		{
+			name:    "two",
+			args:    []string{"one", "two"},
+			expText: "hello [one two]",
+		},
+		{
+			name:    "three",
+			args:    []string{"one", "two", "three"},
+			expText: "hello [one two three]",
+		},
+	}
+
+	for _, tc := range cases {
+		output = "" // reset
+		t.Run(tc.name, func(t *testing.T) {
+			config := &Configuration{
+				Arguments: tc.args,
+				Top: &Component{
+					Function: func(c *Component) Code {
+						output = fmt.Sprintf("hello %v", c.Arguments())
+						return Success
+					},
+				},
+			}
+			c := New(config)
+			result := c.Run()
+			must.Eq(t, tc.expText, output)
+			must.Eq(t, Success, result)
+		})
+	}
+}
+
+func TestArguments_child(t *testing.T) {
+	t.Parallel()
+
+	var output string
+
+	cases := []struct {
+		name    string
+		args    []string
+		expText string
+	}{
+		{
+			name:    "none",
+			args:    []string{"child"},
+			expText: "hi []",
+		},
+		{
+			name:    "one",
+			args:    []string{"child", "one"},
+			expText: "hi [one]",
+		},
+		{
+			name:    "two",
+			args:    []string{"child", "one", "two"},
+			expText: "hi [one two]",
+		},
+		{
+			name:    "three",
+			args:    []string{"child", "one", "two", "three"},
+			expText: "hi [one two three]",
+		},
+	}
+
+	for _, tc := range cases {
+		output = "" // reset
+		t.Run(tc.name, func(t *testing.T) {
+			config := &Configuration{
+				Arguments: tc.args,
+				Top: &Component{
+					Components: Components{
+						{
+							Name: "child",
+							Function: func(c *Component) Code {
+								output = fmt.Sprintf("hi %v", c.Arguments())
+								return Success
+							},
+						},
+					},
+				},
+			}
+			c := New(config)
+			result := c.Run()
+			must.Eq(t, tc.expText, output)
+			must.Eq(t, Success, result)
+		})
+	}
+}
