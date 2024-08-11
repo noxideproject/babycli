@@ -101,9 +101,10 @@ func (c *Component) Context() context.Context {
 }
 
 func (c *Component) Arguments() []string {
-	if len(c.flat) == 0 && c.args.Size() > 0 {
-		c.flat = make([]string, 0, c.args.Size())
-		for i := 0; i < c.args.Size(); i++ {
+	count := c.args.Size()
+	if len(c.flat) == 0 && count > 0 {
+		c.flat = make([]string, 0, count)
+		for i := 0; i < count; i++ {
 			c.flat = append(c.flat, c.args.Pop())
 		}
 	}
