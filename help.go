@@ -97,7 +97,8 @@ func (c *Component) help() string {
 		sb.WriteString("\n")
 	}
 
-	return sb.String()
+	s := sb.String()
+	return strings.TrimSpace(s)
 }
 
 func chop(s string) []string {
