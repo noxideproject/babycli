@@ -130,21 +130,6 @@ func (c *Component) init() {
 	}
 }
 
-func (c *Component) validate(output io.Writer) bool {
-	ok := true
-	for _, f := range c.Flags {
-		if len(f.Long) == 1 {
-			writef(output, "babycli: long flag %q must be more than one character", f.Long)
-			ok = false
-		}
-		if len(f.Short) > 1 {
-			writef(output, "babycli: short flag %q must be one character", f.Short)
-			ok = false
-		}
-	}
-	return ok
-}
-
 func (c *Component) run(output io.Writer) *result {
 	c.init()
 
