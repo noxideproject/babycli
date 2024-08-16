@@ -56,13 +56,13 @@ type Components []*Component
 
 func (cs Components) Contains(name string) bool {
 	return slices.ContainsFunc(cs, func(c *Component) bool {
-		return c.Name == name
+		return c.Is(name)
 	})
 }
 
 func (cs Components) Get(name string) *Component {
 	for _, c := range cs {
-		if c.Name == name {
+		if c.Is(name) {
 			return c
 		}
 	}
@@ -72,6 +72,8 @@ func (cs Components) Get(name string) *Component {
 
 type Component struct {
 	Name string
+
+	Short string
 
 	Help string
 
@@ -94,6 +96,13 @@ type Component struct {
 	version string
 
 	context context.Context
+}
+
+func (c *Component) Is(name string) bool {
+	if len(name) == 1 {
+		return c.Short == name
+	}
+	return c.Name == name
 }
 
 func (c *Component) Context() context.Context {
