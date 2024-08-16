@@ -133,6 +133,10 @@ func (c *Component) init() {
 func (c *Component) run(output io.Writer) *result {
 	c.init()
 
+	if !c.validate(output) {
+		return &result{code: Failure}
+	}
+
 	for !c.args.Empty() {
 		if more := c.processFlags(); !more {
 			break
