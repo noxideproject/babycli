@@ -36,18 +36,22 @@ func (c Components) write(w io.Writer) {
 
 	for i := 0; i < len(lines); i++ {
 		max1 = max(max1, len(lines[i][1]))
-		if lines[i][0] == "" {
-			lines[i][0] = "   "
-		} else {
-			lines[i][0] = " " + lines[i][0] + " "
+	}
+
+	short := func(s string) string {
+		if s == "" {
+			return s
 		}
+		value := "  (" + s + ")"
+		return value
 	}
 
 	for _, line := range lines {
-		_, _ = io.WriteString(w, line[0])
+		_, _ = io.WriteString(w, "   ")
 		_, _ = io.WriteString(w, rightPad(max1, line[1]))
 		_, _ = io.WriteString(w, "- ")
 		_, _ = io.WriteString(w, line[2])
+		_, _ = io.WriteString(w, short(line[0]))
 		_, _ = io.WriteString(w, "\n")
 	}
 }
