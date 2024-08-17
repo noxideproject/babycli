@@ -26,7 +26,7 @@ func (c Components) write(w io.Writer) {
 
 	for _, component := range c {
 		lines = append(lines, [3]string{
-			component.Short,
+			component.Short, // currently not used
 			component.Name,
 			component.Help,
 		})
@@ -38,20 +38,11 @@ func (c Components) write(w io.Writer) {
 		max1 = max(max1, len(lines[i][1]))
 	}
 
-	short := func(s string) string {
-		if s == "" {
-			return s
-		}
-		value := "  (" + s + ")"
-		return value
-	}
-
 	for _, line := range lines {
 		_, _ = io.WriteString(w, "   ")
 		_, _ = io.WriteString(w, rightPad(max1, line[1]))
 		_, _ = io.WriteString(w, "- ")
 		_, _ = io.WriteString(w, line[2])
-		_, _ = io.WriteString(w, short(line[0]))
 		_, _ = io.WriteString(w, "\n")
 	}
 }

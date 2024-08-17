@@ -21,6 +21,8 @@ func (c *Component) validate(output io.Writer) bool {
 		}
 	}
 
+	longCmds := make([]string, 0, len(c.Components))
+	shortCmds := make([]string, 0, len(c.Components))
 	for _, cmd := range c.Components {
 		switch len(cmd.Name) {
 		case 0:
