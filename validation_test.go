@@ -110,3 +110,29 @@ func TestComponent_validate_name_single(t *testing.T) {
 	message := strings.TrimSpace(w.String())
 	must.Eq(t, `babycli: component "x" must be more than one character`, message)
 }
+
+func TestComponent_validate_duplicate_commands(t *testing.T) {
+	t.Parallel()
+
+	config := &Configuration{
+		Top: &Component{
+			Components: Components{
+				{
+					Name: "first",
+				},
+				{
+					Name: "first",
+				},
+			},
+		},
+	}
+
+	w := new(bytes.Buffer)
+	c := New(config)
+	c.output = w
+
+	result := c.Run()
+	must.One(t, result)
+	message := strings.TrimSpace(w.String())
+	must.Eq(t, `babycli: component "first" set twice`, message)
+}
