@@ -5,6 +5,7 @@ package babycli
 
 import (
 	"io"
+	"slices"
 )
 
 func (c *Component) validate(output io.Writer) bool {
@@ -21,7 +22,16 @@ func (c *Component) validate(output io.Writer) bool {
 		}
 	}
 
+	names := make([]string, 0, len(c.Components))
+
 	for _, cmd := range c.Components {
+		if slices.Contains(names, cmd.Name) {
+			writef(output, "babycli: component %q set twice", cmd.Name)
+			ok = false
+		} else {
+			names = append(names, cmd.Name)
+		}
+
 		switch len(cmd.Name) {
 		case 0:
 			writef(output, "babycli: component name missing")
