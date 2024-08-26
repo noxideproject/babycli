@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.59.1
+          version: v1.60.3
           args: --config .github/workflows/scripts/golangci.yaml
   run-tests:
     timeout-minutes: 5

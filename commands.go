@@ -145,7 +145,7 @@ func (c *Component) run(output io.Writer) *result {
 
 	if c.vals.helpSet() {
 		text := c.help()
-		writef(output, text)
+		write(output, text)
 		return &result{code: Success}
 	}
 
@@ -153,7 +153,7 @@ func (c *Component) run(output io.Writer) *result {
 		code := c.Function(c)
 		if code == Usability {
 			text := c.help()
-			writef(output, text)
+			write(output, text)
 			return &result{code: Failure}
 		}
 		return &result{code: code}
@@ -161,7 +161,7 @@ func (c *Component) run(output io.Writer) *result {
 
 	if c.args.Empty() {
 		text := c.help()
-		writef(output, text)
+		write(output, text)
 		return &result{code: Failure}
 	}
 
