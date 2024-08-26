@@ -14,6 +14,11 @@ func panicf(msg string, args ...any) {
 	panic(s)
 }
 
+func write(output io.Writer, msg string) {
+	_, _ = io.WriteString(output, msg)
+	_, _ = io.WriteString(output, "\n")
+}
+
 func writef(output io.Writer, msg string, args ...any) {
 	s := fmt.Sprintf(msg, args...)
 	s += "\n"
