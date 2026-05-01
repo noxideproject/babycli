@@ -1,9 +1,9 @@
 module cattlecloud.net/go/babycli
 
-go 1.23
+go 1.26
 
 require (
-	cattlecloud.net/go/stacks v1.1.2
+	cattlecloud.net/go/stacks v1.1.3
 	github.com/shoenig/test v1.12.2
 )
 
